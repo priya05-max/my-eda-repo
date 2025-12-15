@@ -1,0 +1,14 @@
+---
+- name: Range Event Rule Set
+  hosts: all
+
+  sources:
+    - ansible.eda.range:
+        limit: 30
+
+  rules:
+    - name: Trigger debug message at index 27
+      condition: event.i == 27
+      action:
+        debug:
+          msg: "I am learning to write a rulebook as a part of training"
