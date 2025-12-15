@@ -17,7 +17,7 @@
         rest:
           # --- REPLACE PLACEHOLDERS BELOW ---
           # URL to launch the job template (Requires the numeric ID)
-          url: "https://192.168.122.198/api/v2/job_templates/9/launch/"
+          url: "http://192.168.122.198/api/v2/job_templates/9/launch/"
           method: POST
           
           # Pass the message payload as 'extra_vars' in the API call
