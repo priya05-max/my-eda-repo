@@ -2,34 +2,41 @@
 - name: Webhook Trigger Rule Set
   hosts: all
   
-  # 1. Define the Webhook Source
   sources:
     - ansible.eda.webhook:
-        # Listen on TCP port 5229 for incoming HTTP POST requests
         host: 0.0.0.0
         port: 5229
         
-  # 2. Define the Rules
   rules:
-    # Rule 1: Specific Message (Trigger Job Template)
+    # Rule 1: Specific Message (Trigger Job Template using REST API workaround)
     - name: Specific message trigger
-      # The webhook event payload is available in 'event.payload'
       condition: event.payload.message == "Howdy! Ansible EDA"
       
       action:
-        # Action to run the Job Template created in Phase 1
-        run_job_template:
-          name: Print EDA Webhook Message  # This MUST match the Job Template name!
-          # Pass the message as a variable to the job template
-          extra_vars:
-            event_message: "{{ event.payload.message }}"
+        # Action to run the Job Template by calling the Automation Controller's API directly
+        rest:
+          # --- REPLACE PLACEHOLDERS BELOW ---
+          # URL to launch the job template (Requires the numeric ID)
+          url: "https://<CONTROLLER_IP_OR_HOSTNAME>/api/v2/job_templates/<JOB_TEMPLATE_ID>/launch/"
+          method: POST
+          
+          # Pass the message payload as 'extra_vars' in the API call
+          payload:
+            extra_vars:
+              event_message: "{{ event.payload.message }}"
+          
+          # Authentication: Uses the PAT directly (UNSECURE WORKAROUND)
+          username: "<CONTROLLER_USERNAME>"
+          password: "<CONTROLLER_PAT>" # YOUR ACTUAL PAT GOES HERE
+          
+          # You may need to set this if your Controller uses a self-signed certificate
+          verify_ssl: False 
+          # --- END REPLACE PLACEHOLDERS ---
 
     # Rule 2: Any Other Message (Debug Print Locally)
     - name: Default debug print for other messages
-      # The "not" condition ensures this rule only runs if the first condition fails.
       condition: not event.payload.message == "Howdy! Ansible EDA"
       
       action:
-        # Prints the message locally within the EDA logs
         debug:
           msg: "Received non-specific message locally: {{ event.payload.message }}"
