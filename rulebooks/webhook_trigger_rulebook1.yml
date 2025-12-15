@@ -1,0 +1,23 @@
+---
+- name: Webhook Listener on 5229
+  hosts: all
+  sources:
+    - ansible.eda.webhook:
+        host: 0.0.0.0
+        port: 5229
+  rules:
+    - name: Match Howdy Message
+      condition: event.payload.message == "Howdy! Ansible EDA"
+      action:
+        run_job_template:
+          name: "Print EDA Message"
+          organization: "Default"
+          job_args:
+            extra_vars:
+              event_message: "{{ event.payload.message }}"
+
+    - name: Catch All Other Messages
+      condition: event.payload.message != "Howdy! Ansible EDA"
+      action:
+        debug:
+          msg: "Generic message received: {{ event.payload.message }}"
