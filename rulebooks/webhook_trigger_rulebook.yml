@@ -1,0 +1,35 @@
+---
+- name: Webhook Trigger Rule Set
+  hosts: all
+  
+  # 1. Define the Webhook Source
+  sources:
+    - ansible.eda.webhook:
+        # Listen on TCP port 5229 for incoming HTTP POST requests
+        host: 0.0.0.0
+        port: 5229
+        
+  # 2. Define the Rules
+  rules:
+    # Rule 1: Specific Message (Trigger Job Template)
+    - name: Specific message trigger
+      # The webhook event payload is available in 'event.payload'
+      condition: event.payload.message == "Howdy! Ansible EDA"
+      
+      action:
+        # Action to run the Job Template created in Phase 1
+        run_job_template:
+          name: Print EDA Webhook Message  # This MUST match the Job Template name!
+          # Pass the message as a variable to the job template
+          extra_vars:
+            event_message: "{{ event.payload.message }}"
+
+    # Rule 2: Any Other Message (Debug Print Locally)
+    - name: Default debug print for other messages
+      # The "not" condition ensures this rule only runs if the first condition fails.
+      condition: not event.payload.message == "Howdy! Ansible EDA"
+      
+      action:
+        # Prints the message locally within the EDA logs
+        debug:
+          msg: "Received non-specific message locally: {{ event.payload.message }}"
