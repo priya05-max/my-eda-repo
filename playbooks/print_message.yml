@@ -1,0 +1,10 @@
+---
+- name: Print Message Received from EDA
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  
+  tasks:
+    - name: Print the received message variable
+      ansible.builtin.debug:
+        msg: "Message received from EDA: {{ event_message }}"
