@@ -7,4 +7,4 @@
   tasks:
     - name: Print the received message variable
       ansible.builtin.debug:
-        msg: "Message received from EDA: {{ event_message }}"
+        msg: "Message received from EDA: {{ ansible_extra_vars.event_message }}"
