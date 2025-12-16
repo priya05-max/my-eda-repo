@@ -1,0 +1,30 @@
+---
+- name: Webhook Listener for Conditional Actions
+  hosts: all
+  
+  sources:
+    - ansible.eda.webhook:
+        host: 0.0.0.0
+        port: 5229
+        # The URL to post to will be: http://<eda-server-ip>:5229/endpoint
+
+  rules:
+    # RULE 1: Specific message triggers the Job Template
+    - name: Run Job Template on "Howdy! Ansible EDA"
+      condition: event.payload.message == "Howdy! Ansible EDA"
+      action:
+        run_job_template:
+          name: "Print Webhook Message" # Use the exact name you will give your Job Template
+          organization: "Default"       # Use your organization name
+          
+          # Pass the message content as an extra_var named 'event_message'
+          # to match the variable used in playbooks/print_message.yml
+          extra_vars:
+            event_message: "{{ event.payload.message }}"
+
+    # RULE 2: Catch-all for any other message
+    - name: Print Other Messages on EDA Server
+      condition: not event.payload.message == "Howdy! Ansible EDA" 
+      action:
+        debug:
+          msg: "Received other message on EDA: {{ event.payload.message }}"
